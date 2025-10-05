@@ -21,9 +21,12 @@ const userController = {
 
       const hashed = await hashPassword(password);
       const newUser = new User({ FullName, userName, password: hashed });
+
       await newUser.save();
 
-      res.status(201).json({ message: "User registered successfully" });
+      res
+        .status(201)
+        .json({ message: "User registered successfully", newUser });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -45,14 +48,15 @@ const userController = {
           .json({ message: "Invalid username or password" });
 
       const token = generateToken(user._id);
-
+      user.token = token;
+      await user.save();
       res.json({
         message: "Login successful",
-        token,
         user: {
           id: user._id,
           FullName: user.FullName,
           userName: user.userName,
+          token: user.token,
         },
       });
     } catch (error) {
